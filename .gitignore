@@ -4,3 +4,8 @@ __pycache__/
 docs/data/prices.json
 docs/data/*.tmp
 docs/data/encartes.json
+alexa/skill/lambda/node_modules/
+alexa/worker/node_modules/
+alexa/worker/.wrangler/
+.dev.vars
+.env

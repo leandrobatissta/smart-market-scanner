@@ -1,0 +1,783 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "mercado inteligente",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AddItemIntent",
+          "slots": [
+            {
+              "name": "item",
+              "type": "Mercadoria"
+            },
+            {
+              "name": "quantidade",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "adicionar {item}",
+            "adicione {item}",
+            "adicionar {quantidade} {item}",
+            "adicione {quantidade} {item}",
+            "colocar {item} na lista",
+            "coloque {item} na lista",
+            "coloque {quantidade} {item} na lista",
+            "anotar {item}",
+            "anote {item}",
+            "anote {quantidade} {item}",
+            "preciso de {item}",
+            "preciso de {quantidade} {item}",
+            "incluir {item}",
+            "inclua {item}"
+          ]
+        },
+        {
+          "name": "RemoveItemIntent",
+          "slots": [
+            {
+              "name": "item",
+              "type": "Mercadoria"
+            }
+          ],
+          "samples": [
+            "remover {item}",
+            "remova {item}",
+            "tirar {item} da lista",
+            "tire {item} da lista",
+            "apagar {item}",
+            "apague {item}",
+            "excluir {item}",
+            "exclua {item}"
+          ]
+        },
+        {
+          "name": "ReadListIntent",
+          "samples": [
+            "o que tem na minha lista",
+            "o que tem na lista",
+            "ler minha lista",
+            "leia minha lista",
+            "ler a lista",
+            "leia a lista",
+            "o que falta comprar",
+            "qual é a minha lista"
+          ]
+        },
+        {
+          "name": "ClearListIntent",
+          "samples": [
+            "limpar a lista",
+            "limpe a lista",
+            "apagar a lista",
+            "apague a lista",
+            "esvaziar a lista",
+            "esvazie a lista"
+          ]
+        },
+        {
+          "name": "LinkIntent",
+          "slots": [
+            {
+              "name": "codigo",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "vincular código {codigo}",
+            "vincule código {codigo}",
+            "vincular {codigo}",
+            "o código é {codigo}",
+            "código {codigo}"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "Mercadoria",
+          "values": [
+            {
+              "name": {
+                "value": "arroz"
+              }
+            },
+            {
+              "name": {
+                "value": "feijao preto"
+              }
+            },
+            {
+              "name": {
+                "value": "feijao carioca"
+              }
+            },
+            {
+              "name": {
+                "value": "macarrao espaguete"
+              }
+            },
+            {
+              "name": {
+                "value": "macarrao parafuso"
+              }
+            },
+            {
+              "name": {
+                "value": "farinha de trigo"
+              }
+            },
+            {
+              "name": {
+                "value": "farinha de mandioca"
+              }
+            },
+            {
+              "name": {
+                "value": "fuba"
+              }
+            },
+            {
+              "name": {
+                "value": "acucar refinado"
+              }
+            },
+            {
+              "name": {
+                "value": "acucar cristal"
+              }
+            },
+            {
+              "name": {
+                "value": "sal refinado"
+              }
+            },
+            {
+              "name": {
+                "value": "oleo de soja"
+              }
+            },
+            {
+              "name": {
+                "value": "azeite de oliva"
+              }
+            },
+            {
+              "name": {
+                "value": "vinagre"
+              }
+            },
+            {
+              "name": {
+                "value": "molho de tomate"
+              }
+            },
+            {
+              "name": {
+                "value": "extrato de tomate"
+              }
+            },
+            {
+              "name": {
+                "value": "milho verde lata"
+              }
+            },
+            {
+              "name": {
+                "value": "ervilha lata"
+              }
+            },
+            {
+              "name": {
+                "value": "sardinha lata"
+              }
+            },
+            {
+              "name": {
+                "value": "atum lata"
+              }
+            },
+            {
+              "name": {
+                "value": "cafe"
+              }
+            },
+            {
+              "name": {
+                "value": "cafe soluvel"
+              }
+            },
+            {
+              "name": {
+                "value": "biscoito recheado"
+              }
+            },
+            {
+              "name": {
+                "value": "biscoito cream cracker"
+              }
+            },
+            {
+              "name": {
+                "value": "biscoito maisena"
+              }
+            },
+            {
+              "name": {
+                "value": "bolacha"
+              }
+            },
+            {
+              "name": {
+                "value": "cereal matinal"
+              }
+            },
+            {
+              "name": {
+                "value": "aveia"
+              }
+            },
+            {
+              "name": {
+                "value": "achocolatado"
+              }
+            },
+            {
+              "name": {
+                "value": "chocolate"
+              }
+            },
+            {
+              "name": {
+                "value": "geleia"
+              }
+            },
+            {
+              "name": {
+                "value": "mel"
+              }
+            },
+            {
+              "name": {
+                "value": "tapioca"
+              }
+            },
+            {
+              "name": {
+                "value": "farinha de rosca"
+              }
+            },
+            {
+              "name": {
+                "value": "maionese"
+              }
+            },
+            {
+              "name": {
+                "value": "ketchup"
+              }
+            },
+            {
+              "name": {
+                "value": "mostarda"
+              }
+            },
+            {
+              "name": {
+                "value": "tempero"
+              }
+            },
+            {
+              "name": {
+                "value": "leite integral"
+              }
+            },
+            {
+              "name": {
+                "value": "leite desnatado"
+              }
+            },
+            {
+              "name": {
+                "value": "leite em po"
+              }
+            },
+            {
+              "name": {
+                "value": "leite condensado"
+              }
+            },
+            {
+              "name": {
+                "value": "creme de leite"
+              }
+            },
+            {
+              "name": {
+                "value": "manteiga"
+              }
+            },
+            {
+              "name": {
+                "value": "margarina"
+              }
+            },
+            {
+              "name": {
+                "value": "queijo mussarela"
+              }
+            },
+            {
+              "name": {
+                "value": "queijo prato"
+              }
+            },
+            {
+              "name": {
+                "value": "presunto"
+              }
+            },
+            {
+              "name": {
+                "value": "requeijao"
+              }
+            },
+            {
+              "name": {
+                "value": "iogurte"
+              }
+            },
+            {
+              "name": {
+                "value": "ovos"
+              }
+            },
+            {
+              "name": {
+                "value": "pao de forma"
+              }
+            },
+            {
+              "name": {
+                "value": "pao frances"
+              }
+            },
+            {
+              "name": {
+                "value": "alho"
+              }
+            },
+            {
+              "name": {
+                "value": "cebola"
+              }
+            },
+            {
+              "name": {
+                "value": "batata"
+              }
+            },
+            {
+              "name": {
+                "value": "tomate"
+              }
+            },
+            {
+              "name": {
+                "value": "cenoura"
+              }
+            },
+            {
+              "name": {
+                "value": "banana"
+              }
+            },
+            {
+              "name": {
+                "value": "maca"
+              }
+            },
+            {
+              "name": {
+                "value": "laranja"
+              }
+            },
+            {
+              "name": {
+                "value": "limao"
+              }
+            },
+            {
+              "name": {
+                "value": "mamao"
+              }
+            },
+            {
+              "name": {
+                "value": "melancia"
+              }
+            },
+            {
+              "name": {
+                "value": "alface"
+              }
+            },
+            {
+              "name": {
+                "value": "brocolis"
+              }
+            },
+            {
+              "name": {
+                "value": "abobrinha"
+              }
+            },
+            {
+              "name": {
+                "value": "frango inteiro"
+              }
+            },
+            {
+              "name": {
+                "value": "peito de frango"
+              }
+            },
+            {
+              "name": {
+                "value": "coxa e sobrecoxa"
+              }
+            },
+            {
+              "name": {
+                "value": "file de frango"
+              }
+            },
+            {
+              "name": {
+                "value": "carne moida"
+              }
+            },
+            {
+              "name": {
+                "value": "patinho"
+              }
+            },
+            {
+              "name": {
+                "value": "acem"
+              }
+            },
+            {
+              "name": {
+                "value": "contrafile"
+              }
+            },
+            {
+              "name": {
+                "value": "alcatra"
+              }
+            },
+            {
+              "name": {
+                "value": "costela"
+              }
+            },
+            {
+              "name": {
+                "value": "linguica"
+              }
+            },
+            {
+              "name": {
+                "value": "salsicha"
+              }
+            },
+            {
+              "name": {
+                "value": "bacon"
+              }
+            },
+            {
+              "name": {
+                "value": "peixe file"
+              }
+            },
+            {
+              "name": {
+                "value": "camarao"
+              }
+            },
+            {
+              "name": {
+                "value": "hamburguer"
+              }
+            },
+            {
+              "name": {
+                "value": "empanado de frango"
+              }
+            },
+            {
+              "name": {
+                "value": "lasanha congelada"
+              }
+            },
+            {
+              "name": {
+                "value": "pizza congelada"
+              }
+            },
+            {
+              "name": {
+                "value": "sorvete"
+              }
+            },
+            {
+              "name": {
+                "value": "agua mineral"
+              }
+            },
+            {
+              "name": {
+                "value": "agua com gas"
+              }
+            },
+            {
+              "name": {
+                "value": "refrigerante cola"
+              }
+            },
+            {
+              "name": {
+                "value": "refrigerante guarana"
+              }
+            },
+            {
+              "name": {
+                "value": "suco de laranja"
+              }
+            },
+            {
+              "name": {
+                "value": "suco em po"
+              }
+            },
+            {
+              "name": {
+                "value": "cerveja lata"
+              }
+            },
+            {
+              "name": {
+                "value": "cerveja long neck"
+              }
+            },
+            {
+              "name": {
+                "value": "vinho tinto"
+              }
+            },
+            {
+              "name": {
+                "value": "cha"
+              }
+            },
+            {
+              "name": {
+                "value": "energetico"
+              }
+            },
+            {
+              "name": {
+                "value": "isotonico"
+              }
+            },
+            {
+              "name": {
+                "value": "sabao em po"
+              }
+            },
+            {
+              "name": {
+                "value": "sabao liquido"
+              }
+            },
+            {
+              "name": {
+                "value": "amaciante"
+              }
+            },
+            {
+              "name": {
+                "value": "detergente"
+              }
+            },
+            {
+              "name": {
+                "value": "agua sanitaria"
+              }
+            },
+            {
+              "name": {
+                "value": "desinfetante"
+              }
+            },
+            {
+              "name": {
+                "value": "limpador multiuso"
+              }
+            },
+            {
+              "name": {
+                "value": "esponja de cozinha"
+              }
+            },
+            {
+              "name": {
+                "value": "saco de lixo"
+              }
+            },
+            {
+              "name": {
+                "value": "papel toalha"
+              }
+            },
+            {
+              "name": {
+                "value": "papel aluminio"
+              }
+            },
+            {
+              "name": {
+                "value": "filme plastico"
+              }
+            },
+            {
+              "name": {
+                "value": "fosforo"
+              }
+            },
+            {
+              "name": {
+                "value": "vela"
+              }
+            },
+            {
+              "name": {
+                "value": "sabonete"
+              }
+            },
+            {
+              "name": {
+                "value": "shampoo"
+              }
+            },
+            {
+              "name": {
+                "value": "condicionador"
+              }
+            },
+            {
+              "name": {
+                "value": "creme dental"
+              }
+            },
+            {
+              "name": {
+                "value": "escova de dentes"
+              }
+            },
+            {
+              "name": {
+                "value": "enxaguante bucal"
+              }
+            },
+            {
+              "name": {
+                "value": "desodorante"
+              }
+            },
+            {
+              "name": {
+                "value": "papel higienico"
+              }
+            },
+            {
+              "name": {
+                "value": "absorvente"
+              }
+            },
+            {
+              "name": {
+                "value": "fralda descartavel"
+              }
+            },
+            {
+              "name": {
+                "value": "lenco umedecido"
+              }
+            },
+            {
+              "name": {
+                "value": "cotonete"
+              }
+            },
+            {
+              "name": {
+                "value": "racao para caes"
+              }
+            },
+            {
+              "name": {
+                "value": "racao para gatos"
+              }
+            },
+            {
+              "name": {
+                "value": "areia sanitaria"
+              }
+            },
+            {
+              "name": {
+                "value": "pilha"
+              }
+            },
+            {
+              "name": {
+                "value": "lampada"
+              }
+            },
+            {
+              "name": {
+                "value": "carvao"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

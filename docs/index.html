@@ -14,6 +14,7 @@
   <div class="wrap">
     <h1><span class="logo" aria-hidden="true">🛒</span> Smart Market Scanner</h1>
     <p class="sub">Compare sua lista de compras entre os mercados. Os preços são coletados automaticamente.</p>
+    <div class="who" id="who" hidden><span id="who-name"></span><button class="btn btn--light" id="logout" type="button">Sair</button></div>
     <div class="stats" id="stats" aria-live="polite"></div>
     <div class="refresh" id="refresh" hidden>
       <button class="btn btn--light" id="refresh-btn" type="button">↻ Atualizar base</button>
@@ -24,6 +25,23 @@
   </div>
 </header>
 
+<section class="login" id="login" hidden aria-labelledby="h-login">
+  <div class="wrap">
+    <div class="login__box panel">
+      <h2 id="h-login">Entrar</h2>
+      <p class="hint">Entre para ver e editar a sua lista de compras.</p>
+      <form id="login-form" autocomplete="on">
+        <label class="fld"><span>Usuário</span><input id="login-user" name="username" autocomplete="username" autocapitalize="none" required maxlength="30"></label>
+        <label class="fld"><span>Senha</span><input id="login-pass" name="password" type="password" autocomplete="current-password" required maxlength="100"></label>
+        <label class="check"><input type="checkbox" id="login-keep"> Manter conectado neste aparelho</label>
+        <p class="status err" id="login-msg" role="alert"></p>
+        <button class="btn" id="login-btn" type="submit">Entrar</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="app" hidden>
 <nav class="nav" aria-label="Seções">
   <div class="wrap nav__in" id="nav" role="tablist">
     <button type="button" role="tab" data-view="lista" aria-selected="true">Minha lista <span class="badge" id="b-lista"></span></button>
@@ -77,6 +95,19 @@
             <button class="btn" type="button" id="apply">Aplicar à lista</button>
             <button class="btn btn--ghost" type="button" id="cancel">Cancelar</button>
           </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="import" id="alexa" hidden>
+      <summary>Conectar a Alexa (falar os itens da lista)</summary>
+      <div class="import__body">
+        <p class="hint">Com a skill <strong>Mercado Inteligente</strong> instalada na sua Alexa, o que você pedir por voz entra nesta lista, e o que estiver aqui a Alexa lê para você.</p>
+        <div class="pick"><button class="btn" type="button" id="alexa-code">Gerar código de ligação</button><button class="btn btn--ghost" type="button" id="alexa-off" hidden>Desconectar neste aparelho</button></div>
+        <p class="status" id="alexa-status" role="status" aria-live="polite"></p>
+        <div id="alexa-steps" hidden>
+          <p class="alexa__code" id="alexa-codigo" aria-label="Código de ligação"></p>
+          <p class="hint">Diga: <em>“Alexa, abra mercado inteligente”</em> e depois <em>“vincular código”</em> e os seis números. O código vale 10 minutos.</p>
         </div>
       </div>
     </details>
@@ -184,6 +215,7 @@
 <footer class="wrap foot">
   <p>Preços da loja virtual de cada mercado, coletados automaticamente; podem diferir das lojas físicas e mudam ao longo do dia. Confira no mercado antes de comprar. Sua lista fica só no seu navegador.</p>
 </footer>
+</div>
 <script type="module" src="app.js"></script>
 </body>
 </html>

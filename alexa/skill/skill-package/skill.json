@@ -1,0 +1,21 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "pt-BR": {
+          "name": "Mercado Inteligente",
+          "summary": "Sua lista de compras por voz, ligada ao site Smart Market Scanner.",
+          "description": "Adicione, remova e ouça os itens da sua lista de compras por voz. A mesma lista aparece no site Smart Market Scanner, que compara os preços entre os mercados.",
+          "examplePhrases": ["Alexa, abra mercado inteligente", "Alexa, peça ao mercado inteligente para adicionar leite", "Alexa, pergunte ao mercado inteligente o que tem na lista"],
+          "keywords": ["lista de compras", "mercado", "supermercado"]
+        }
+      },
+      "isAvailableWorldwide": false,
+      "testingInstructions": "Uso pessoal, em desenvolvimento.",
+      "category": "ORGANIZERS_AND_ASSISTANTS",
+      "distributionCountries": []
+    },
+    "apis": { "custom": {} },
+    "manifestVersion": "1.0"
+  }
+}

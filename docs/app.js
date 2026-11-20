@@ -8,12 +8,16 @@ import { CESTA_BASICA } from './lib/starter.js';
 import { agrupar, validade } from './lib/encartes.js';
 import { derivarItens, prepararBase, sugerir } from './lib/search.js';
 import { filtrar, janela, paginar } from './lib/paginate.js';
+import { bloqueado, entrar, tentativa } from './lib/auth.js';
+import { ativos, mesclar, reconciliar } from './lib/lista-sync.js';
+import { criarCliente, enderecoValido, novoToken } from './lib/sync-client.js';
 
 const $ = (id) => document.getElementById(id);
-const KEY = 'sms-list-v1';
+const KEY_BASE = 'sms-list-v1';
+const listKey = () => `${KEY_BASE}:${state.user || 'anon'}`;
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-const state = { serverProducts: [], baseStores: [], encPending: null, refreshing: false, base: null, sug: [], sugIdx: -1, rawProducts: [], encartes: [], encInfo: null, encStore: 'todos', apiOn: false, searching: new Set(), consK: 1, view: 'lista', out: null, list: [], products: [], stores: [], storeNames: {}, storeSites: {}, storeInfo: [], pending: null, selected: null, offerStore: 'todos' };
+const state = { sync: [], syncUrl: '', syncCli: null, syncTimer: null, user: null, serverProducts: [], baseStores: [], encPending: null, refreshing: false, base: null, sug: [], sugIdx: -1, rawProducts: [], encartes: [], encInfo: null, encStore: 'todos', apiOn: false, searching: new Set(), consK: 1, view: 'lista', out: null, list: [], products: [], stores: [], storeNames: {}, storeSites: {}, storeInfo: [], pending: null, selected: null, offerStore: 'todos' };
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -66,12 +70,23 @@ function applyLocal() {
 }
 
 // ---------- persistência (só no navegador; se o armazenamento falhar, a lista vive só na página)
-function save() { try { localStorage.setItem(KEY, JSON.stringify(state.list)); } catch { /* sem armazenamento */ } }
+const syncKey = () => `sms-list-sync:${state.user || 'anon'}`;
+const tokenKey = () => `sms-sync-token:${state.user || 'anon'}`;
+function save() {
+  state.sync = reconciliar(state.sync, state.list);   // marca o que mudou e guarda o que foi apagado, para a Alexa e o site concordarem
+  try { localStorage.setItem(listKey(), JSON.stringify(state.list)); localStorage.setItem(syncKey(), JSON.stringify(state.sync)); } catch { /* sem armazenamento */ }
+  agendarEnvio();
+}
 function restore() {
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) || '[]');
+    // a lista que existia antes do login passa para o primeiro usuário (leandro), uma vez
+    let txt = localStorage.getItem(listKey());
+    if (txt === null && state.user === 'leandro') { txt = localStorage.getItem(KEY_BASE); if (txt !== null) localStorage.setItem(listKey(), txt); }
+    const raw = JSON.parse(txt || '[]');
     if (Array.isArray(raw)) state.list = raw.filter((i) => i && typeof i.name === 'string' && i.qty > 0).map((i) => ({ name: i.name.slice(0, 80), qty: Math.min(Number(i.qty) || 1, 999) }));
   } catch { state.list = []; }
+  try { const s = JSON.parse(localStorage.getItem(syncKey()) || '[]'); state.sync = Array.isArray(s) ? s : []; } catch { state.sync = []; }
+  state.sync = reconciliar(state.sync, state.list);   // cobre listas guardadas antes da sincronização existir
 }
 
 // ---------- lista
@@ -844,9 +859,124 @@ for (const b of document.querySelectorAll('#nav button')) b.addEventListener('cl
 window.addEventListener('popstate', () => showView(location.hash.slice(1), false));
 $('clear').addEventListener('click', () => { state.list = []; save(); renderAll(); });
 
-restore();
-renderAll();
-showView(location.hash.slice(1) || 'lista', false);
-loadPrices();   // os preços carregam já; a API e os encartes vêm em paralelo, sem segurar a tela
-loadEncartes();
-probeApi();
+// ---------- sincronização com a Alexa (só se data/config.json tiver o endereço do Worker)
+function tokenSalvo() { try { return localStorage.getItem(tokenKey()) || ''; } catch { return ''; } }
+function cliente() {
+  const t = tokenSalvo();
+  if (!state.syncUrl || !t) return null;
+  state.syncCli ||= criarCliente({ url: state.syncUrl, token: t });
+  return state.syncCli;
+}
+let envioPendente = null;
+function agendarEnvio() {
+  if (!cliente()) return;
+  clearTimeout(envioPendente);
+  envioPendente = setTimeout(() => { sincronizar(true); }, 1200);
+}
+/** Troca a lista com o Worker: manda a nossa, recebe a mesclada (inclui o que a Alexa adicionou) e atualiza a tela se mudou. */
+async function sincronizar(enviar) {
+  const c = cliente();
+  if (!c || !state.user) return;
+  try {
+    const remoto = enviar ? await c.push(state.sync) : await c.pull();
+    const juntos = mesclar(state.sync, remoto);
+    const antes = JSON.stringify(ativos(state.sync).map((i) => [i.name, i.qty]));
+    state.sync = juntos;
+    state.list = ativos(juntos).map((i) => ({ name: i.name, qty: i.qty }));
+    try { localStorage.setItem(listKey(), JSON.stringify(state.list)); localStorage.setItem(syncKey(), JSON.stringify(state.sync)); } catch { /* sem armazenamento */ }
+    if (JSON.stringify(ativos(juntos).map((i) => [i.name, i.qty])) !== antes) { renderAll(); }
+    if (!enviar && JSON.stringify(juntos) !== JSON.stringify(remoto)) await c.push(state.sync);   // devolve o que só nós temos
+  } catch (e) { if (e.status === 401) alexaStatus('A ligação com a lista expirou. Gere um novo código.', true); }
+}
+function iniciarSincronizacao() {
+  if (!state.syncUrl) return;
+  $('alexa').hidden = false;
+  paintAlexa();
+  if (!cliente()) return;
+  sincronizar(false);
+  clearInterval(state.syncTimer);
+  state.syncTimer = setInterval(() => { if (!document.hidden) sincronizar(false); }, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) sincronizar(false); });
+}
+function alexaStatus(msg, err = false) { const s = $('alexa-status'); s.textContent = msg; s.className = 'status' + (err ? ' err' : ''); }
+function paintAlexa() { $('alexa-off').hidden = !tokenSalvo(); }
+
+async function gerarCodigo() {
+  try {
+    if (!tokenSalvo()) { try { localStorage.setItem(tokenKey(), novoToken()); } catch { alexaStatus('Este navegador não guarda dados; não dá para ligar a Alexa.', true); return; } state.syncCli = null; }
+    const c = cliente();
+    await c.push(state.sync);                      // já sobe a lista atual, para a Alexa ler na hora
+    const { code } = await c.pairStart();
+    $('alexa-codigo').textContent = code.replace(/(\d{3})(\d{3})/, '$1 $2');
+    $('alexa-steps').hidden = false; paintAlexa();
+    alexaStatus('Aguardando você falar o código para a Alexa…');
+    for (let i = 0; i < 200; i++) {                // confere a cada 3 s por até 10 min
+      await new Promise((r) => setTimeout(r, 3000));
+      if (await c.pairStatus()) { alexaStatus('Alexa conectada ✓. O que você pedir por voz entra na lista.', false); $('alexa-steps').hidden = true; iniciarSincronizacao(); return; }
+      if (!$('alexa').open) break;
+    }
+  } catch (e) { alexaStatus(`Não consegui gerar o código: ${e.message}`, true); }
+}
+$('alexa-code').addEventListener('click', gerarCodigo);
+$('alexa-off').addEventListener('click', () => { try { localStorage.removeItem(tokenKey()); } catch { /* sem armazenamento */ } state.syncCli = null; clearInterval(state.syncTimer); paintAlexa(); $('alexa-steps').hidden = true; alexaStatus('Desconectado neste aparelho (a lista continua aqui).'); });
+
+// ---------- entrada (usuário e senha no navegador; veja lib/auth.js para o que isso é e o que não é)
+const SESSAO = 'sms-sessao';
+let usuarios = [];
+let controle = { erros: 0, ate: 0 };
+
+function sessaoSalva() {
+  for (const s of [sessionStorage, localStorage]) { try { const v = JSON.parse(s.getItem(SESSAO) || 'null'); if (v && typeof v.user === 'string') return v; } catch { /* sem sessão */ } }
+  return null;
+}
+function guardarSessao(u, manter) { try { (manter ? localStorage : sessionStorage).setItem(SESSAO, JSON.stringify(u)); } catch { /* sem armazenamento */ } }
+function limparSessao() { for (const s of [sessionStorage, localStorage]) { try { s.removeItem(SESSAO); } catch { /* sem armazenamento */ } } }
+
+function iniciar(u) {
+  state.user = u.user;
+  $('login').hidden = true; $('app').hidden = false;
+  $('who').hidden = false; $('who-name').textContent = `Olá, ${u.name}`;
+  restore();
+  renderAll();
+  showView(location.hash.slice(1) || 'lista', false);
+  loadPrices();   // os preços carregam já; a API e os encartes vêm em paralelo, sem segurar a tela
+  loadEncartes();
+  probeApi();
+  fetch('data/config.json', { cache: 'no-store' }).then((r) => r.json()).then((cfg) => { state.syncUrl = enderecoValido(cfg); iniciarSincronizacao(); }).catch(() => {});
+}
+
+function mostrarLogin(msg = '') {
+  $('app').hidden = true; $('who').hidden = true; $('login').hidden = false;
+  $('login-msg').textContent = msg;
+  $('login-user').focus();
+}
+
+$('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const msg = $('login-msg'); const btn = $('login-btn');
+  if (bloqueado(controle, Date.now())) { msg.textContent = `Muitas tentativas. Aguarde ${Math.ceil((controle.ate - Date.now()) / 1000)} s.`; return; }
+  btn.disabled = true; msg.textContent = '';
+  try {
+    const u = await entrar(usuarios, $('login-user').value, $('login-pass').value);
+    controle = tentativa(controle, !!u, Date.now());
+    if (!u) { msg.textContent = 'Usuário ou senha incorretos.'; $('login-pass').value = ''; $('login-pass').focus(); return; }
+    guardarSessao(u, $('login-keep').checked);
+    $('login-pass').value = '';
+    iniciar(u);
+  } catch { msg.textContent = 'Não foi possível conferir a senha neste navegador.'; }
+  finally { btn.disabled = false; }
+});
+$('logout').addEventListener('click', () => { limparSessao(); location.hash = ''; location.reload(); });
+
+(async function arrancar() {
+  try {
+    const res = await fetch('data/users.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const lista = await res.json();
+    if (!Array.isArray(lista) || !lista.length) throw new Error('sem usuários');
+    usuarios = lista;
+  } catch { mostrarLogin('Não consegui carregar os usuários. Recarregue a página.'); return; }
+  const s = sessaoSalva();
+  const u = s && usuarios.find((x) => x.user === s.user);
+  if (u) iniciar({ user: u.user, name: u.name }); else { limparSessao(); mostrarLogin(); }
+})();

@@ -206,3 +206,14 @@ td.best .thumb { border-color: var(--best-fg); }
 .fld { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); }
 .fld select, .fld input { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); font: inherit; }
 .plist input[type=number][step="0.01"] { width: 92px; }
+
+/* entrada */
+.login { padding-block: 28px; }
+.login__box { max-width: 420px; margin-inline: auto; }
+.login__box form { display: flex; flex-direction: column; gap: 12px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--muted); }
+.check input { width: auto; }
+.who { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-weight: 600; }
+.who .btn { padding: 6px 14px; }
+
+.alexa__code { font-size: 2rem; font-weight: 800; letter-spacing: .25em; font-variant-numeric: tabular-nums; margin: 4px 0; color: var(--accent-2); }

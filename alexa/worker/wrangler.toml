@@ -1,0 +1,13 @@
+# Cloudflare Worker (plano gratuito) que guarda a lista de compras e fala com o site e com a skill da Alexa.
+name = "smart-market-lista"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[[kv_namespaces]]
+binding = "LISTAS"
+id = "TROQUE_PELO_ID_DO_KV"   # npx wrangler kv namespace create LISTAS
+
+[vars]
+ALLOWED_ORIGIN = "https://leandrobatissta.github.io"   # origem do site (http://localhost:8080 também vale para testar localmente)
+
+# Segredo da skill (NÃO vai aqui): npx wrangler secret put SKILL_SECRET
