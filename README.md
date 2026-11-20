@@ -38,6 +38,10 @@ A aba **Encartes** usa a página de cada rede no **Tiendeo** (Florianópolis): t
 
 Os **preços dentro do encarte não são lidos** (exigiria OCR de imagens e a autorização das fontes); ficam como próximo passo. Outras fontes avaliadas: Preços Online (só Fort e Komprão, em imagens) e a página de folhetos do Fort (depende de escolher loja).
 
+### Data Market (API comercial), avaliado em 20/11/2026
+
+Conferido com uma chave de teste (`scanner/datamarket_check.py`): das **29 lojas monitoradas em Santa Catarina** (todas de e-commerce) existem Giassi, Bistek e Angeloni (que já coletamos direto), mais Hippo, Super Koch, Hiper Select, Super Chico e outras de Florianópolis e região. **Não há Super Imperatriz nem Fort Atacadista.** Por isso ele não resolve o Imperatriz; poderia, no futuro, acrescentar Hippo, Koch e Hiper Select, mas é pago depois dos 14 dias de teste.
+
 ## Rodar localmente (Docker)
 
 ```bash

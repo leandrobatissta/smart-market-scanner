@@ -387,5 +387,20 @@ R$ 2,79"""
         self.assertEqual(len({p["id"] for p in ps}), len(ps))
 
 
+class DataMarketChaveTest(unittest.TestCase):
+    def test_chave_do_ambiente_do_arquivo_e_recusa_a_cortada(self):
+        import tempfile
+        from pathlib import Path
+        from datamarket_check import ler_chave
+        with tempfile.TemporaryDirectory() as d:
+            arq = Path(d) / ".env"
+            self.assertIsNone(ler_chave({}, arq))                                     # sem nada
+            arq.write_text("OUTRA=1\nDATAMARKET_API_KEY='dm_chave_completa_1234567890'\n")
+            self.assertEqual(ler_chave({}, arq), "dm_chave_completa_1234567890")      # do arquivo, sem aspas
+            self.assertEqual(ler_chave({"DATAMARKET_API_KEY": "dm_do_ambiente_1234567890"}, arq), "dm_do_ambiente_1234567890")   # o ambiente manda
+            arq.write_text("DATAMARKET_API_KEY=dm_naC5u...\n")
+            self.assertIsNone(ler_chave({}, arq))                                     # a chave cortada da tela não vale
+
+
 if __name__ == "__main__":
     unittest.main()
