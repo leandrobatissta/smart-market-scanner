@@ -79,9 +79,9 @@ function save() {
 }
 function restore() {
   try {
-    // a lista que existia antes do login passa para o primeiro usuário (leandro), uma vez
+    // a lista que existia antes do login é COPIADA para cada usuário que ainda não tem a sua (a antiga fica guardada, ninguém a perde)
     let txt = localStorage.getItem(listKey());
-    if (txt === null && state.user === 'leandro') { txt = localStorage.getItem(KEY_BASE); if (txt !== null) localStorage.setItem(listKey(), txt); }
+    if (txt === null) { txt = localStorage.getItem(KEY_BASE); if (txt !== null) localStorage.setItem(listKey(), txt); }
     const raw = JSON.parse(txt || '[]');
     if (Array.isArray(raw)) state.list = raw.filter((i) => i && typeof i.name === 'string' && i.qty > 0).map((i) => ({ name: i.name.slice(0, 80), qty: Math.min(Number(i.qty) || 1, 999) }));
   } catch { state.list = []; }
