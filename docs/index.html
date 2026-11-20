@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smart Market Scanner</title>
+<meta name="description" content="Compare o preço da sua lista de compras entre os supermercados de Santa Catarina. Importe por planilha, PDF, TXT ou foto.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Smart Market Scanner</h1>
+    <p class="sub">Compare sua lista de compras entre os mercados. Os preços são coletados automaticamente.</p>
+    <p class="meta" id="meta" aria-live="polite">Carregando preços…</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="panel" aria-labelledby="h-list">
+    <h2 id="h-list">Sua lista</h2>
+
+    <form id="add" class="addrow" autocomplete="off">
+      <label class="grow"><span class="sr">Item</span><input id="add-name" placeholder="Adicionar item (ex.: arroz 5kg)" required maxlength="80"></label>
+      <label class="qty"><span class="sr">Quantidade</span><input id="add-qty" type="number" min="1" max="999" step="1" value="1" inputmode="numeric"></label>
+      <button class="btn" type="submit">Adicionar</button>
+    </form>
+
+    <details class="import" id="import">
+      <summary>Importar lista (planilha, PDF, TXT, CSV ou foto)</summary>
+      <div class="import__body">
+        <fieldset class="mode">
+          <legend>O que fazer com a lista importada?</legend>
+          <label><input type="radio" name="mode" value="add" checked> Adicionar à lista atual</label>
+          <label><input type="radio" name="mode" value="replace"> Substituir a lista atual</label>
+        </fieldset>
+        <div class="pick">
+          <label class="btn btn--ghost">Escolher arquivo<input id="file" type="file" hidden accept=".txt,.csv,.xlsx,.xls,.ods,.pdf,image/*"></label>
+          <label class="btn btn--ghost">Tirar foto<input id="photo" type="file" hidden accept="image/*" capture="environment"></label>
+        </div>
+        <label class="paste"><span>Ou cole o texto da lista (um item por linha)</span><textarea id="paste" rows="4" placeholder="2 leite&#10;arroz 5kg&#10;feijão preto"></textarea></label>
+        <button class="btn btn--ghost" type="button" id="read-paste">Ler texto colado</button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+
+        <div id="preview" hidden>
+          <h3>Confira antes de aplicar</h3>
+          <p class="hint">Corrija os nomes (principalmente quando veio de foto) ou remova o que não é item.</p>
+          <ul class="plist" id="plist"></ul>
+          <div class="pick">
+            <button class="btn" type="button" id="apply">Aplicar à lista</button>
+            <button class="btn btn--ghost" type="button" id="cancel">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <ul class="list" id="list" aria-label="Itens da lista"></ul>
+    <p class="empty" id="list-empty">Sua lista está vazia. Adicione itens acima ou importe um arquivo.</p>
+    <button class="link" type="button" id="clear" hidden>Limpar lista</button>
+  </section>
+
+  <section class="panel" id="result" aria-labelledby="h-res" hidden>
+    <h2 id="h-res">Comparação</h2>
+    <div class="totals" id="totals"></div>
+    <div class="tablewrap"><table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <p class="hint" id="notfound" hidden></p>
+  </section>
+
+  <section class="panel" id="stores" aria-labelledby="h-st" hidden>
+    <h2 id="h-st">Mercados</h2>
+    <ul class="storelist" id="storelist"></ul>
+  </section>
+
+  <p class="error" id="error" hidden></p>
+</main>
+
+<footer class="wrap foot">
+  <p>Preços da loja virtual de cada mercado, coletados automaticamente; podem diferir das lojas físicas e mudam ao longo do dia. Confira no mercado antes de comprar. Sua lista fica só no seu navegador.</p>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>

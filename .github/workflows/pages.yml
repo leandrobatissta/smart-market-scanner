@@ -1,0 +1,46 @@
+name: Publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 */6 * * *"   # coleta os preços a cada 6 horas
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Testes do coletor
+        working-directory: scanner
+        run: python -m unittest test_scanner
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Testes da lista e da comparação
+        run: node --test tests/js/*.test.js
+      - name: Coleta dos preços
+        working-directory: scanner
+        run: python scan.py --out ../docs/data/prices.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

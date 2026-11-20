@@ -1,0 +1,27 @@
+{
+  "region": "Santa Catarina (preços da loja virtual de cada mercado)",
+  "perTermLimit": 12,
+  "delaySeconds": 0.5,
+  "userAgent": "smart-market-scanner/1.0",
+  "stores": [
+    {
+      "id": "giassi",
+      "name": "Giassi",
+      "site": "https://www.giassi.com.br",
+      "kind": "vtex"
+    },
+    {
+      "id": "bistek",
+      "name": "Bistek",
+      "site": "https://www.bistek.com.br",
+      "kind": "vtex"
+    },
+    {
+      "id": "forte",
+      "name": "Forte Atacadista",
+      "site": "https://fortatacadista.com.br",
+      "kind": "forte"
+    }
+  ],
+  "forteLimit": 5
+}

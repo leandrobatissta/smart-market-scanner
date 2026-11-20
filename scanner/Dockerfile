@@ -1,0 +1,7 @@
+FROM python:3.13-slim
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+WORKDIR /app
+COPY *.py terms.txt config.json ./
+RUN useradd --create-home --uid 10001 scanner
+USER scanner
+CMD ["python", "scan.py", "--out", "/out/prices.json"]

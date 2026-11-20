@@ -1,0 +1,30 @@
+# Ambiente local igual ao que vai ao GitHub Pages: o coletor grava docs/data/prices.json e o nginx serve o site.
+services:
+  scanner:
+    build: ./scanner
+    restart: unless-stopped
+    volumes:
+      - ./docs/data:/out
+    # coleta ao subir e repete a cada 6 horas
+    command: ["sh", "-c", "while true; do python scan.py --out /out/prices.json || true; sleep 21600; done"]
+
+  web:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docs:/usr/share/nginx/html:ro
+
+  test:
+    build: ./scanner
+    profiles: ["test"]
+    command: ["python", "-m", "unittest", "-v", "test_scanner"]
+
+  test-js:
+    image: node:22-alpine
+    profiles: ["test"]
+    working_dir: /work
+    volumes:
+      - ./:/work:ro
+    command: ["sh", "-c", "node --test tests/js/*.test.js"]
