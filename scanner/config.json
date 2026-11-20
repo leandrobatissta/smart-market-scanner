@@ -97,5 +97,12 @@
         "https://www.tiendeo.com.br/Encartes-Catalogos/komprao-atacadista"
       ]
     }
+  ],
+  "pdfs": [
+    {
+      "store": "angeloni",
+      "name": "Encarte semanal Angeloni (SC)",
+      "url": "https://statics.angeloni.com.br/encartes/Tematica/SemanalAngeloni_SC.pdf"
+    }
   ]
 }

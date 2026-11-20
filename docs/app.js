@@ -59,7 +59,7 @@ function writeLocalEnc(list) { try { localStorage.setItem(KEY_ENC, JSON.stringif
 function applyLocal() {
   const local = vigentes(readLocalEnc(), isoToday());
   writeLocalEnc(local);                                  // o vencido sai sozinho
-  state.rawProducts = [...state.serverProducts, ...local];
+  state.rawProducts = [...vigentes(state.serverProducts, isoToday()), ...local];   // oferta de encarte vencida sai, venha do servidor ou do navegador
   state.products = state.rawProducts.map(prepare);
   state.stores = [...new Set([...state.baseStores, ...local.map((p) => p.store)])];
   buildBase();
@@ -624,7 +624,7 @@ function renderStores(data) {
     const li = el('li');
     const enc = readLocalEnc().filter((p) => p.store === s.id);
     const encTxt = enc.length ? `${enc.length} ofertas de encarte (até ${enc[0].validUntil.split('-').reverse().slice(0, 2).join('/')})` : '';
-    const label = s.status === 'ok' ? `${s.name}: ${s.products} produtos coletados${encTxt ? ` + ${encTxt}` : ''}` : `${s.name}: ${encTxt ? encTxt : `indisponível (${s.reason || s.status})`}`;
+    const label = s.status === 'ok' ? `${s.name}: ${s.products} produtos coletados${encTxt ? ` + ${encTxt}` : ''}` : `${s.name}: ${encTxt ? encTxt : (s.status === 'indisponivel' ? 'sem coleta automática (sem preço público): importe o encarte na aba Encartes para entrar na comparação' : `indisponível (${s.reason || s.status})`)}`;
     li.append(document.createTextNode(label + (s.reason && s.status === 'ok' ? ` · ${s.reason}` : '') + ' · '));
     if (s.site && /^https:\/\//.test(s.site)) { const a = el('a', '', 'site'); a.href = s.site; a.target = '_blank'; a.rel = 'noopener noreferrer'; li.append(a); }
     ul.append(li);

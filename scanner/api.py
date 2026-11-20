@@ -134,6 +134,9 @@ def _run_refresh() -> None:
         if not products:
             raise RuntimeError("nenhum produto coletado (sem internet ou mercados fora do ar)")
         with REFRESH_LOCK:
+            REFRESH["message"] = "lendo os encartes em PDF…"
+        products += scan.collect_pdf_offers(cfg, pairs)   # só depois de conferir que a coleta dos mercados trouxe produtos
+        with REFRESH_LOCK:
             REFRESH["message"] = "gravando os preços…"
             REFRESH["percent"] = 96
         n = scan.write_prices(DATA_DIR / "prices.json", cfg, stores_out, products)

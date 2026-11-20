@@ -273,7 +273,7 @@ class RefreshTest(unittest.TestCase):
         import tempfile, time as _t
         import api, scan
         seen = []
-        orig = scan.run_scan, scan.write_encartes
+        orig = scan.run_scan, scan.write_encartes, scan.collect_pdf_offers
         with tempfile.TemporaryDirectory() as d:
             def fake_scan(cfg, pairs, selected, on_progress=None):
                 for step in range(0, 11, 5):
@@ -284,6 +284,7 @@ class RefreshTest(unittest.TestCase):
                 return ([{"id": s["id"], "name": s["name"], "site": s["site"], "status": "ok", "reason": "", "products": 1} for s in selected],
                         [{"id": "x:1", "store": selected[0]["id"], "name": "Arroz", "price": 5.0, "listPrice": 5.0, "term": "arroz 5kg", "category": "Mercearia"}])
             scan.run_scan = fake_scan
+            scan.collect_pdf_offers = lambda cfg, pairs: []
             scan.write_encartes = lambda cfg, folder: (folder / "encartes.json").write_text("{}")
             old_dir, api.DATA_DIR = api.DATA_DIR, Path(d)
             try:
@@ -301,13 +302,14 @@ class RefreshTest(unittest.TestCase):
                 self.assertLessEqual(max(seen), 95)                          # 95% é o teto da coleta; o resto é gravar
                 self.assertTrue((Path(d) / "prices.json").exists() and (Path(d) / "encartes.json").exists())
             finally:
-                scan.run_scan, scan.write_encartes = orig
+                scan.run_scan, scan.write_encartes, scan.collect_pdf_offers = orig
                 api.DATA_DIR = old_dir
 
     def test_erro_vira_status_error(self):
         import api, scan
-        orig = scan.run_scan
+        orig, orig_pdf = scan.run_scan, scan.collect_pdf_offers
         scan.run_scan = lambda *a, **k: ([], [])
+        scan.collect_pdf_offers = lambda cfg, pairs: [{'id': 'x'}]   # oferta de PDF sozinha não mascara coleta vazia
         try:
             api.start_refresh()
             import time as _t
@@ -318,7 +320,71 @@ class RefreshTest(unittest.TestCase):
             self.assertEqual(api.refresh_view()["status"], "error")
             self.assertIn("nenhum produto", api.refresh_view()["message"])
         finally:
-            scan.run_scan = orig
+            scan.run_scan, scan.collect_pdf_offers = orig, orig_pdf
+
+
+class EncartePdfTest(unittest.TestCase):
+    TEXTO = """Ofertas válidas para a rede Angeloni em
+Santa Catarina (exceto Florianópolis Bocaiúva
+e Jurerê), de 19/11/2026 a 22/11/2026.
+Cerveja SPATEN
+Puro Malte Lata
+473ml - cada
+Quant. Disp. 1000 un
+R$
+4,99
+Mala WEST A\\CASA  - cada
+Quant. Disp. 1000 un
+DE: R$319,90
+Café MELITTA Tradicional
+Pacote 500g
+Quant. Disp. 1000 un
+DE: R$25,90
+POR:
+R$
+22,90
+ou 3x R$7,63
+Cereal NESTLÉ - cada
+Quant. Disp. 1000 un
+Snow Flakes Caixa 230g
+R$
+6,99
+Kitkat Caixa 210g
+R$
+11,99
+48 9830-0000
+Detergente YPÊ 500ml
+Quant. Disp. 1000 un
+R$ 2,79"""
+
+    def test_validade(self):
+        from encarte_pdf import validade
+        self.assertEqual(validade(self.TEXTO), ("2026-11-19", "2026-11-22"))
+        self.assertIsNone(validade("sem datas"))
+        self.assertIsNone(validade("de 30/02/2026 a 22/11/2026"))
+
+    def test_ofertas_limpas_com_de_por_e_variacoes(self):
+        from encarte_pdf import ler_ofertas
+        of = {o["name"]: o for o in ler_ofertas(self.TEXTO)}
+        self.assertEqual(of["Cerveja SPATEN Puro Malte Lata 473ml"]["price"], 4.99)
+        self.assertEqual(of["Café MELITTA Tradicional Pacote 500g"]["price"], 22.90)
+        self.assertEqual(of["Café MELITTA Tradicional Pacote 500g"]["listPrice"], 25.90)
+        self.assertEqual(of["Cereal NESTLÉ Snow Flakes Caixa 230g"]["price"], 6.99)
+        self.assertEqual(of["Kitkat Caixa 210g"]["price"], 11.99)
+        self.assertEqual(of["Detergente YPÊ 500ml"]["price"], 2.79)
+        self.assertFalse(any("R$" in n or "/2026" in n or "9830" in n for n in of))        # sem lixo nos nomes
+        self.assertNotIn("Mala WEST A\\CASA", of)                                         # oferta sem preço claro não entra
+
+    def test_produtos_com_validade_e_categoria(self):
+        from encarte_pdf import categoria_pelo_nome, em_produtos, ler_ofertas
+        cat = categoria_pelo_nome([("cafe 500g", "Mercearia"), ("detergente", "Limpeza")])
+        ps = em_produtos(ler_ofertas(self.TEXTO), "angeloni", "2026-11-22", "https://x/p.pdf", cat)
+        cafe = next(p for p in ps if p["name"].startswith("Café"))
+        self.assertEqual((cafe["category"], cafe["validUntil"], cafe["store"], cafe["promo"]), ("Mercearia", "2026-11-22", "angeloni", True))
+        self.assertEqual(cafe["unitPrice"], 45.8)
+        self.assertGreater(cafe["listPrice"], cafe["price"])
+        self.assertEqual(next(p for p in ps if p["name"].startswith("Deterg"))["category"], "Limpeza")
+        self.assertEqual(len({p["id"] for p in ps}), len(ps))
 
 
 if __name__ == "__main__":

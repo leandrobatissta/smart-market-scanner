@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from robots import can_fetch
+from encarte_pdf import categoria_pelo_nome, em_produtos as pdf_em_produtos, extrair_texto, ler_ofertas as pdf_ler_ofertas, validade as pdf_validade
 from encartes import current as current_encartes, parse_catalog_page
 from bistek import parse_itemlist, select_category_urls, sitemap_urls
 from forte import parse_product_page, product_urls, select_urls
@@ -289,6 +290,40 @@ def write_encartes(cfg: dict[str, Any], folder: Path) -> None:
         print(f"aviso: encartes: {e}", file=sys.stderr)
 
 
+def http_bytes(url: str, ua: str, timeout: int = 90) -> Optional[bytes]:
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": ua})
+        with urllib.request.urlopen(req, timeout=timeout) as res:
+            raw = res.read()
+        return gzip.decompress(raw) if raw[:2] == b"\x1f\x8b" else raw
+    except (urllib.error.URLError, TimeoutError, ValueError):
+        return None
+
+
+def collect_pdf_offers(cfg: dict[str, Any], pairs: list[tuple[str, str]], today: Optional[date] = None) -> list[dict[str, Any]]:
+    """Ofertas dos encartes em PDF com texto (hoje o semanal do Angeloni). PDF fora do ar, sem validade ou já vencido: nenhuma oferta, sem derrubar a coleta."""
+    today = today or date.today()
+    categoria = categoria_pelo_nome(pairs)
+    out: list[dict[str, Any]] = []
+    for src in cfg.get("pdfs", []):
+        try:
+            data = http_bytes(src["url"], cfg["userAgent"])
+            if not data or data[:4] != b"%PDF":
+                print(f"aviso: PDF {src['name']} indisponível", file=sys.stderr)
+                continue
+            texto = extrair_texto(data)
+            val = pdf_validade(texto)
+            if not val or val[1] < today.isoformat():
+                print(f"aviso: PDF {src['name']} sem validade ou vencido", file=sys.stderr)
+                continue
+            produtos = pdf_em_produtos(pdf_ler_ofertas(texto), src["store"], val[1], src["url"], categoria)
+            print(f"  {src['name']}: {len(produtos)} ofertas válidas até {val[1]}", flush=True)
+            out.extend(produtos)
+        except Exception as e:  # um PDF ruim não derruba a coleta
+            print(f"aviso: PDF {src.get('name')}: {e}", file=sys.stderr)
+    return out
+
+
 def run_scan(cfg: dict[str, Any], pairs: list[tuple[str, str]], selected: list[dict[str, Any]], on_progress: Optional[Callable[[str, int, int], None]] = None) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Coleta os mercados em paralelo (um thread por mercado, cada um com 1 pedido por vez). `on_progress(id_do_mercado, feitos, total)` informa o andamento."""
     terms = [t for t, _ in pairs]
@@ -346,10 +381,23 @@ def main() -> int:
     ap.add_argument("--stores", default="", help="ids separados por vírgula (padrão: todos)")
     ap.add_argument("--merge", action="store_true", help="com --stores: refaz só esses mercados e mantém os outros do arquivo atual")
     ap.add_argument("--encartes-only", action="store_true", help="só atualiza os encartes (rápido)")
+    ap.add_argument("--pdf-only", action="store_true", help="só relê os encartes em PDF e troca as ofertas deles no arquivo atual (rápido)")
     args = ap.parse_args()
     cfg = json.loads((HERE / "config.json").read_text(encoding="utf-8"))
     if args.encartes_only:
         write_encartes(cfg, Path(args.out).parent)
+        return 0
+    if args.pdf_only:
+        out = Path(args.out)
+        if not out.exists():
+            print("erro: não há prices.json para atualizar (rode a coleta completa antes)", file=sys.stderr)
+            return 1
+        data = json.loads(out.read_text(encoding="utf-8"))
+        stores = {p["store"] for p in cfg.get("pdfs", [])}
+        keep = [p for p in data["products"] if not (p["store"] in stores and ":pdf:" in p["id"])]
+        novos = collect_pdf_offers(cfg, load_all_terms())
+        write_prices(out, cfg, data["stores"], keep + novos)
+        print(f"ok: {len(novos)} ofertas de PDF -> {out}")
         return 0
     pairs = load_all_terms()
     if args.limit_terms:
@@ -357,6 +405,8 @@ def main() -> int:
     wanted = {s for s in args.stores.split(",") if s}
     selected = [st for st in cfg["stores"] if not wanted or st["id"] in wanted]
     stores_out, products = run_scan(cfg, pairs, selected)
+    if not wanted or {p['store'] for p in cfg.get('pdfs', [])} & wanted:
+        products += collect_pdf_offers(cfg, pairs)
     if not products:
         print("erro: nenhum produto coletado", file=sys.stderr)
         return 1
