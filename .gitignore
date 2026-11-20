@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 docs/data/prices.json
 docs/data/*.tmp
+docs/data/encartes.json

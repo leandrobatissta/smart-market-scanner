@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "17 */6 * * *"   # coleta os preços a cada 6 horas
+    - cron: "17 9,21 * * *"   # coleta completa 2 vezes por dia (a coleta leva ~25 min)
   workflow_dispatch:
 
 permissions:
@@ -35,9 +35,20 @@ jobs:
           node-version: "22"
       - name: Testes da lista e da comparação
         run: node --test tests/js/*.test.js
-      - name: Coleta dos preços
+      - name: Restaurar os últimos preços (push não refaz a coleta de 25 min)
+        uses: actions/cache@v4
+        with:
+          path: docs/data
+          key: dados-${{ github.run_id }}
+          restore-keys: dados-
+      - name: Coleta dos preços e dos encartes
         working-directory: scanner
-        run: python scan.py --out ../docs/data/prices.json
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then
+            python scan.py --out ../docs/data/prices.json                      # agendada ou manual: coleta completa
+          elif [ ! -f ../docs/data/prices.json ]; then
+            python scan.py --out ../docs/data/prices.json --limit-terms 25     # 1º push, sem cache: coleta rápida só para o site subir
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

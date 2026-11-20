@@ -1,0 +1,38 @@
+name: Incluir item pedido no site
+
+# Quem abre o site no GitHub Pages não tem API: o botão "pedir inclusão" abre uma issue "Termo: <item>" com o rótulo novo-termo.
+# Só o dono do repositório pode usar (as issues de outras pessoas são ignoradas); o termo é validado e entra em scanner/user_terms.txt.
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+jobs:
+  add:
+    if: github.event.issue.author_association == 'OWNER' && contains(github.event.issue.labels.*.name, 'novo-termo')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar e acrescentar o termo
+        env:
+          TITLE: ${{ github.event.issue.title }}
+        run: |
+          term="$(printf '%s' "$TITLE" | sed -E 's/^[Tt]ermo:[[:space:]]*//' | tr 'A-Z' 'a-z' | tr -s ' ')"
+          if ! printf '%s' "$term" | grep -Eq '^[a-z0-9À-ÿ][a-z0-9À-ÿ ]{1,39}$'; then echo "termo inválido"; exit 1; fi
+          if grep -Fxq "$term" scanner/user_terms.txt scanner/terms.txt; then echo "já existe"; exit 0; fi
+          printf '%s\n' "$term" >> scanner/user_terms.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scanner/user_terms.txt
+          git commit -m "chore: novo termo pedido: $term"
+          git push
+      - name: Publicar de novo e fechar a issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run pages.yml
+          gh issue close "${{ github.event.issue.number }}" --comment "Termo incluído; os preços aparecem na próxima publicação (alguns minutos)."

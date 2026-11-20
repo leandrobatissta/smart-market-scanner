@@ -5,8 +5,20 @@ services:
     restart: unless-stopped
     volumes:
       - ./docs/data:/out
+      - ./scanner/user_terms.txt:/app/user_terms.txt:ro
     # coleta ao subir e repete a cada 6 horas
     command: ["sh", "-c", "while true; do python scan.py --out /out/prices.json || true; sleep 21600; done"]
+
+  # busca sob demanda: o site pede aqui um item novo e ele é procurado em todos os mercados cadastrados
+  api:
+    build: ./scanner
+    restart: unless-stopped
+    command: ["python", "api.py"]
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - ./scanner/user_terms.txt:/app/user_terms.txt
+      - ./docs/data:/data          # a "Atualizar base" do site grava aqui os preços e os encartes
 
   web:
     image: nginx:1.27-alpine
@@ -15,6 +27,9 @@ services:
       - "8080:80"
     volumes:
       - ./docs:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
 
   test:
     build: ./scanner

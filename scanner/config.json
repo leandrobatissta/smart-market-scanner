@@ -11,17 +11,91 @@
       "kind": "vtex"
     },
     {
+      "id": "angeloni",
+      "name": "Angeloni",
+      "site": "https://super.angeloni.com.br",
+      "kind": "vtex"
+    },
+    {
       "id": "bistek",
       "name": "Bistek",
       "site": "https://www.bistek.com.br",
-      "kind": "vtex"
+      "kind": "bistek"
     },
     {
       "id": "forte",
       "name": "Forte Atacadista",
       "site": "https://fortatacadista.com.br",
       "kind": "forte"
+    },
+    {
+      "id": "imperatriz",
+      "name": "Super Imperatriz",
+      "site": "https://superimperatriz.com.br",
+      "kind": "none",
+      "reason": "não publica preços: o site é institucional e o encarte digital fica no app Super Clube (só para membros)"
     }
   ],
-  "forteLimit": 5
+  "forteLimit": 5,
+  "bistekCategories": 2,
+  "encartes": [
+    {
+      "store": "imperatriz",
+      "name": "Super Imperatriz",
+      "urls": [
+        "https://www.tiendeo.com.br/Florianopolis/supermercados-imperatriz",
+        "https://www.tiendeo.com.br/Encartes-Catalogos/supermercados-imperatriz"
+      ],
+      "links": [
+        {
+          "label": "Encartes do Imperatriz (FlipHTML5)",
+          "url": "https://fliphtml5.com/superimperatriz/"
+        },
+        {
+          "label": "Site do Imperatriz",
+          "url": "https://superimperatriz.com.br/"
+        }
+      ]
+    },
+    {
+      "store": "giassi",
+      "name": "Giassi",
+      "urls": [
+        "https://www.tiendeo.com.br/Florianopolis/giassi-supermercados",
+        "https://www.tiendeo.com.br/Encartes-Catalogos/giassi-supermercados"
+      ]
+    },
+    {
+      "store": "angeloni",
+      "name": "Angeloni",
+      "urls": [
+        "https://www.tiendeo.com.br/Florianopolis/angeloni",
+        "https://www.tiendeo.com.br/Encartes-Catalogos/angeloni"
+      ]
+    },
+    {
+      "store": "bistek",
+      "name": "Bistek",
+      "urls": [
+        "https://www.tiendeo.com.br/Florianopolis/bistek-supermercados",
+        "https://www.tiendeo.com.br/Encartes-Catalogos/bistek-supermercados"
+      ]
+    },
+    {
+      "store": "forte",
+      "name": "Fort Atacadista",
+      "urls": [
+        "https://www.tiendeo.com.br/Florianopolis/fort-atacadista",
+        "https://www.tiendeo.com.br/Encartes-Catalogos/fort-atacadista"
+      ]
+    },
+    {
+      "store": "komprao",
+      "name": "Komprão",
+      "urls": [
+        "https://www.tiendeo.com.br/Florianopolis/komprao-atacadista",
+        "https://www.tiendeo.com.br/Encartes-Catalogos/komprao-atacadista"
+      ]
+    }
+  ]
 }

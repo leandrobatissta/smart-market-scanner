@@ -1,4 +1,6 @@
-# Termos buscados em cada mercado (um por linha). Ajuste à vontade: o que não estiver aqui não entra no catálogo do site.
+# Termos buscados em cada mercado, agrupados por categoria (## Categoria). Ajuste à vontade: o que não estiver aqui não entra no catálogo do site.
+
+## Mercearia
 arroz 5kg
 arroz 1kg
 feijao preto 1kg
@@ -22,21 +24,6 @@ sardinha lata
 atum lata
 cafe 500g
 cafe soluvel
-leite integral 1l
-leite desnatado 1l
-leite em po
-leite condensado
-creme de leite
-manteiga
-margarina
-queijo mussarela
-queijo prato
-presunto
-requeijao
-iogurte
-ovos
-pao de forma
-pao frances
 biscoito recheado
 biscoito cream cracker
 biscoito maisena
@@ -53,6 +40,27 @@ maionese
 ketchup
 mostarda
 tempero
+
+## Laticínios e frios
+leite integral 1l
+leite desnatado 1l
+leite em po
+leite condensado
+creme de leite
+manteiga
+margarina
+queijo mussarela
+queijo prato
+presunto
+requeijao
+iogurte
+ovos
+
+## Padaria
+pao de forma
+pao frances
+
+## Hortifruti
 alho
 cebola
 batata
@@ -67,6 +75,8 @@ melancia
 alface
 brocolis
 abobrinha
+
+## Carnes e congelados
 frango inteiro
 peito de frango
 coxa e sobrecoxa
@@ -87,6 +97,8 @@ empanado de frango
 lasanha congelada
 pizza congelada
 sorvete
+
+## Bebidas
 agua mineral
 agua com gas
 refrigerante cola
@@ -99,6 +111,8 @@ vinho tinto
 cha
 energetico
 isotonico
+
+## Limpeza
 sabao em po
 sabao liquido
 amaciante
@@ -113,6 +127,8 @@ papel aluminio
 filme plastico
 fosforo
 vela
+
+## Higiene e beleza
 sabonete
 shampoo
 condicionador
@@ -125,6 +141,8 @@ absorvente
 fralda descartavel
 lenco umedecido
 cotonete
+
+## Pets e outros
 racao para caes
 racao para gatos
 areia sanitaria

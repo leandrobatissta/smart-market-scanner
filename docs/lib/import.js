@@ -83,3 +83,13 @@ export async function importFile(file, progress = () => {}) {
   if (/\.(txt|text|md|list)$/.test(name) || type.startsWith('text/')) return parseText(await file.text());
   throw new Error('Tipo de arquivo não suportado. Use TXT, CSV, planilha (XLSX), PDF ou uma foto.');
 }
+
+/** Texto bruto de uma foto, PDF ou arquivo de texto (para o encarte: o formato das linhas é interpretado depois). */
+export async function extractText(file, progress = () => {}) {
+  const name = file.name.toLowerCase();
+  const type = file.type || '';
+  if (/\.pdf$/.test(name) || type === 'application/pdf') return readPdf(file, progress);
+  if (type.startsWith('image/') || /\.(png|jpe?g|webp|bmp|gif|heic)$/.test(name)) return readImage(file, progress);
+  if (/\.(txt|text|md)$/.test(name) || type.startsWith('text/')) return file.text();
+  throw new Error('Tipo de arquivo não suportado. Use foto, PDF ou TXT.');
+}

@@ -77,6 +77,8 @@ COMPOSE="$(compose_cmd)"
 ok "Docker: $(docker --version)"
 ok "Compose: $($COMPOSE version | head -1)"
 
+chmod 666 scanner/user_terms.txt 2>/dev/null || true; mkdir -p docs/data; chmod 777 docs/data 2>/dev/null || true   # a API grava aqui os itens novos pedidos pelo site
+
 say "Construindo as imagens"
 ${SUDO}$COMPOSE build
 

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Smart Market Scanner</title>
+<meta name="repo" content="leandrobatissta/smart-market-scanner">
 <meta name="description" content="Compare o preço da sua lista de compras entre os supermercados de Santa Catarina. Importe por planilha, PDF, TXT ou foto.">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css">
@@ -11,24 +12,48 @@
 <body>
 <header class="top">
   <div class="wrap">
-    <h1>Smart Market Scanner</h1>
+    <h1><span class="logo" aria-hidden="true">🛒</span> Smart Market Scanner</h1>
     <p class="sub">Compare sua lista de compras entre os mercados. Os preços são coletados automaticamente.</p>
+    <div class="stats" id="stats" aria-live="polite"></div>
+    <div class="refresh" id="refresh" hidden>
+      <button class="btn btn--light" id="refresh-btn" type="button">↻ Atualizar base</button>
+      <div class="progress" id="refresh-prog" hidden><div class="progress__bar" id="refresh-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Andamento da atualização da base"></div></div>
+      <span class="refresh__txt" id="refresh-txt" role="status" aria-live="polite"></span>
+    </div>
     <p class="meta" id="meta" aria-live="polite">Carregando preços…</p>
   </div>
 </header>
 
-<main class="wrap">
-  <section class="panel" aria-labelledby="h-list">
-    <h2 id="h-list">Sua lista</h2>
+<nav class="nav" aria-label="Seções">
+  <div class="wrap nav__in" id="nav" role="tablist">
+    <button type="button" role="tab" data-view="lista" aria-selected="true">Minha lista <span class="badge" id="b-lista"></span></button>
+    <button type="button" role="tab" data-view="comparar" aria-selected="false">Comparar</button>
+    <button type="button" role="tab" data-view="consolidada" aria-selected="false">Lista consolidada</button>
+    <button type="button" role="tab" data-view="mercado" aria-selected="false">Por mercado</button>
+    <button type="button" role="tab" data-view="promocoes" aria-selected="false">Promoções <span class="badge" id="b-promo"></span></button>
+    <button type="button" role="tab" data-view="catalogo" aria-selected="false">Catálogo <span class="badge" id="b-cat"></span></button>
+    <button type="button" role="tab" data-view="encartes" aria-selected="false">Encartes <span class="badge" id="b-enc"></span></button>
+    <button type="button" role="tab" data-view="mercados" aria-selected="false">Mercados</button>
+  </div>
+</nav>
 
+<main class="wrap">
+  <!-- 1. Minha lista -->
+  <section class="panel" id="v-lista" aria-labelledby="h-list">
+    <h2 id="h-list">Minha lista</h2>
     <form id="add" class="addrow" autocomplete="off">
-      <label class="grow"><span class="sr">Item</span><input id="add-name" placeholder="Adicionar item (ex.: arroz 5kg)" required maxlength="80"></label>
+      <div class="grow combo">
+        <label class="sr" for="add-name">Item</label>
+        <input id="add-name" placeholder="Buscar ou adicionar item (ex.: arroz, café, sabão em pó)" required maxlength="80" role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list">
+        <ul id="sug" class="sug" role="listbox" aria-label="Sugestões" hidden></ul>
+      </div>
       <label class="qty"><span class="sr">Quantidade</span><input id="add-qty" type="number" min="1" max="999" step="1" value="1" inputmode="numeric"></label>
       <button class="btn" type="submit">Adicionar</button>
     </form>
+    <p class="status" id="add-status" role="status" aria-live="polite"></p>
 
     <details class="import" id="import">
-      <summary>Importar lista (planilha, PDF, TXT, CSV ou foto)</summary>
+      <summary>Importar lista (cesta básica, planilha, PDF, TXT, CSV ou foto)</summary>
       <div class="import__body">
         <fieldset class="mode">
           <legend>O que fazer com a lista importada?</legend>
@@ -36,6 +61,7 @@
           <label><input type="radio" name="mode" value="replace"> Substituir a lista atual</label>
         </fieldset>
         <div class="pick">
+          <button class="btn btn--ghost" type="button" id="starter">Usar a cesta básica</button>
           <label class="btn btn--ghost">Escolher arquivo<input id="file" type="file" hidden accept=".txt,.csv,.xlsx,.xls,.ods,.pdf,image/*"></label>
           <label class="btn btn--ghost">Tirar foto<input id="photo" type="file" hidden accept="image/*" capture="environment"></label>
         </div>
@@ -56,18 +82,98 @@
     </details>
 
     <ul class="list" id="list" aria-label="Itens da lista"></ul>
-    <p class="empty" id="list-empty">Sua lista está vazia. Adicione itens acima ou importe um arquivo.</p>
+    <div class="empty" id="list-empty"><p>Sua lista está vazia. Adicione itens acima, importe um arquivo ou comece pela cesta básica.</p><button class="btn" type="button" id="starter2">Começar com a cesta básica</button></div>
     <button class="link" type="button" id="clear" hidden>Limpar lista</button>
   </section>
 
-  <section class="panel" id="result" aria-labelledby="h-res" hidden>
-    <h2 id="h-res">Comparação</h2>
-    <div class="totals" id="totals"></div>
-    <div class="tablewrap"><table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
-    <p class="hint" id="notfound" hidden></p>
+  <!-- 2. Comparar -->
+  <section class="panel" id="v-comparar" aria-labelledby="h-res" hidden>
+    <div class="svhead"><h2 id="h-res">Comparar mercados</h2><button class="btn" type="button" id="open-cons">Ver lista consolidada</button></div>
+    <p class="empty" id="res-empty">Adicione itens na aba <strong>Minha lista</strong> para comparar os preços.</p>
+    <div id="res-body" hidden>
+      <div class="totals" id="totals"></div>
+      <div class="tablewrap"><table id="tbl"><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+      <p class="hint" id="notfound" hidden></p>
+    </div>
   </section>
 
-  <section class="panel" id="stores" aria-labelledby="h-st" hidden>
+  <!-- 3. Lista consolidada -->
+  <section class="panel" id="v-consolidada" aria-labelledby="h-cons" hidden>
+    <h2 id="h-cons">Lista consolidada</h2>
+    <p class="empty" id="cons-empty">Adicione itens na aba <strong>Minha lista</strong> para montar a lista de compras.</p>
+    <div id="cons-wrap" hidden>
+      <p class="hint">Escolha como comprar: tudo num lugar só, ou dividindo entre os mercados mais baratos. Cada item vai para o mercado de menor preço da opção escolhida.</p>
+      <div class="opts" id="cons-opts" role="group" aria-label="Opções de compra"></div>
+      <div id="cons-body"></div>
+    </div>
+  </section>
+
+  <!-- 4. Por mercado -->
+  <section class="panel" id="v-mercado" aria-labelledby="h-sv" hidden>
+    <h2 id="h-sv">Sua lista em cada mercado</h2>
+    <p class="empty" id="sv-empty">Adicione itens na aba <strong>Minha lista</strong> para ver a lista em cada mercado.</p>
+    <div id="sv-wrap" hidden>
+      <div class="chips" id="sv-chips" role="group" aria-label="Escolher o mercado"></div>
+      <p class="hint" id="sv-sub"></p>
+      <div id="sv-body"></div>
+    </div>
+  </section>
+
+  <!-- 5. Promoções -->
+  <section class="panel" id="v-promocoes" aria-labelledby="h-of" hidden>
+    <h2 id="h-of">Promoções encontradas</h2>
+    <p class="empty" id="of-empty">Nenhuma promoção encontrada na última coleta.</p>
+    <div id="of-wrap" hidden>
+      <p class="hint">Produtos em oferta (preço de oferta abaixo do normal, ou na página de ofertas do mercado).</p>
+      <div id="of-grid"></div>
+    </div>
+  </section>
+
+  <!-- 5b. Catálogo -->
+  <section class="panel" id="v-catalogo" aria-labelledby="h-cat" hidden>
+    <h2 id="h-cat">Catálogo de produtos</h2>
+    <p class="empty" id="cat-empty">Ainda não há produtos coletados.</p>
+    <div id="cat-wrap" hidden>
+      <p class="hint" id="cat-sub">Todos os produtos coletados nos mercados. Use a busca, o mercado, a categoria e as páginas para navegar.</p>
+      <div id="cat-grid"></div>
+    </div>
+  </section>
+
+  <!-- 6. Encartes -->
+  <section class="panel" id="v-encartes" aria-labelledby="h-enc" hidden>
+    <h2 id="h-enc">Encartes atualizados</h2>
+    <p class="empty" id="enc-empty">Nenhum encarte vigente na última coleta.</p>
+    <details class="import" id="enc-import">
+      <summary>Importar encarte (foto ou PDF) como preços de um mercado</summary>
+      <div class="import__body">
+        <p class="hint">Para mercados sem preço público (ex.: Super Imperatriz): baixe ou fotografe as páginas do encarte da semana. Os preços entram na comparação até a data de validade e depois saem sozinhos. Ficam só no seu navegador.</p>
+        <div class="gbar gbar--enc">
+          <label class="fld"><span>Mercado</span><select id="enc-store"></select></label>
+          <label class="fld"><span>Válido até</span><input type="date" id="enc-until"></label>
+        </div>
+        <div class="pick">
+          <label class="btn btn--ghost">Escolher fotos ou PDF<input id="enc-files" type="file" multiple hidden accept="image/*,.pdf,.txt"></label>
+          <label class="btn btn--ghost">Tirar foto<input id="enc-cam" type="file" hidden accept="image/*" capture="environment"></label>
+        </div>
+        <p class="status" id="enc-status" role="status" aria-live="polite"></p>
+        <div id="enc-prev" hidden>
+          <h3>Confira as ofertas lidas</h3>
+          <p class="hint">Corrija nomes e preços (a leitura de foto erra) e remova o que não é produto.</p>
+          <ul class="plist" id="enc-plist"></ul>
+          <div class="pick"><button class="btn" type="button" id="enc-apply">Adicionar à comparação</button><button class="btn btn--ghost" type="button" id="enc-cancel">Cancelar</button></div>
+        </div>
+        <div id="enc-saved"></div>
+      </div>
+    </details>
+    <div id="enc-wrap" hidden>
+      <p class="hint" id="enc-sub"></p>
+      <div class="chips" id="enc-chips" role="group" aria-label="Filtrar por mercado"></div>
+      <div id="enc-list"></div>
+    </div>
+  </section>
+
+  <!-- 7. Mercados -->
+  <section class="panel" id="v-mercados" aria-labelledby="h-st" hidden>
     <h2 id="h-st">Mercados</h2>
     <ul class="storelist" id="storelist"></ul>
   </section>

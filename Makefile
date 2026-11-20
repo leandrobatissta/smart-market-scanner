@@ -1,11 +1,14 @@
 COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || echo docker-compose)
 
-.PHONY: setup up down logs scan scan-fast test open
+.PHONY: setup deploy up down logs scan scan-fast test open
 
 setup:      ## prepara a máquina inteira (Docker, imagens, testes e primeira coleta)
 	./setup.sh
 
-up:         ## sobe coletor + site em http://localhost:8080
+deploy:     ## sobe tudo (build, testes, coletor, API e site) e confere a saúde
+	./deploy.sh
+
+up:         ## sobe coletor + API + site em http://localhost:8080
 	$(COMPOSE) up -d --build
 	@echo "Site: http://localhost:8080  (a primeira coleta completa leva alguns minutos; 'make scan-fast' faz uma rápida)"
 

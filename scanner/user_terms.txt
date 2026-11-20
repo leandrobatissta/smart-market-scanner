@@ -1,0 +1,7 @@
+# Itens pedidos pelos usuários do site (acrescentados automaticamente). Um por linha.
+pao de queijo
+pao de queijo
+pao de queijo
+pao de queijo
+pao de queijo
+pao de queijo
