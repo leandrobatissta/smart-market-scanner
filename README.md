@@ -74,6 +74,10 @@ O botão **"pedir inclusão"** abre uma issue "Termo: item" com o rótulo `novo-
 
 A base de itens vem dos termos de `scanner/terms.txt` (por categoria) e dos itens pedidos; cada item guarda quantos produtos foram achados, o menor preço e os mercados que o têm. A busca (`docs/lib/search.js`) tolera erro de digitação, ignora acento, aceita prefixo e usa sinônimos; o mesmo mecanismo faz o casamento dos itens da lista com os produtos.
 
+## Alexa (adicionar e ouvir a lista por voz)
+
+Skill própria + serviço gratuito na Cloudflare que o site e a Alexa compartilham. **Passo a passo completo: [`alexa/PASSO_A_PASSO.md`](alexa/PASSO_A_PASSO.md).** A lista de compras nativa da Alexa não é acessível a aplicativos desde 2024, então a lista é a do site (veja `alexa/README.md`).
+
 ## O que entra no catálogo
 
 Os termos de `scanner/terms.txt` (cesta básica, higiene, limpeza, bebidas… organizados por categoria com `## Categoria`) mais os itens pedidos em `scanner/user_terms.txt`. Não baixamos o catálogo inteiro dos mercados de propósito.

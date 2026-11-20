@@ -20,50 +20,23 @@ Alexa (skill)  ──►  Cloudflare Worker (lista, grátis)  ◄──  site (n
 | `skill/skill-package/` | Manifesto e modelo de voz **pt-BR** (frases e os itens do `scanner/terms.txt`). Gere de novo com `node skill/gen-model.mjs`. |
 | `../docs/lib/lista-sync.js` | Regras de junção da lista (usadas pelo site e pelo Worker). |
 
-## Colocar no ar (você faz uma vez; precisa de conta gratuita na Cloudflare e na Amazon)
+## Colocar no ar
 
-### 1. Worker (Cloudflare)
+**Siga o [PASSO_A_PASSO.md](PASSO_A_PASSO.md)** (Cloudflare, console da Alexa, ligação ao site e uso na Echo, com solução de problemas). Resumo:
 
-```bash
-cd alexa/worker
-npx wrangler login
-npx wrangler kv namespace create LISTAS        # copie o id para wrangler.toml
-npx wrangler secret put SKILL_SECRET           # invente um segredo longo; guarde para o passo 3
-# em wrangler.toml, confira ALLOWED_ORIGIN (https://leandrobatissta.github.io)
-npx wrangler deploy                            # mostra o endereço https://smart-market-lista.<conta>.workers.dev
-```
+1. `./alexa/deploy-worker.sh` publica o Worker e imprime `LISTA_URL` e `SKILL_SECRET`.
+2. No [console da Alexa](https://developer.amazon.com/alexa/console/ask): criar a skill (Custom, Alexa-hosted Node.js, pt-BR), colar o modelo de voz e os arquivos de `skill/lambda/` mais um `config.js` com os dois valores.
+3. No site: **Minha lista → Conectar a Alexa → Gerar código**, e dizer *"vincular código ..."* para a Alexa.
 
-### 2. Site
-
-Em `docs/data/config.json` coloque o endereço do Worker e publique:
-
-```json
-{ "syncUrl": "https://smart-market-lista.SUACONTA.workers.dev" }
-```
-
-Com isso aparece, em **Minha lista**, o painel **Conectar a Alexa**.
-
-### 3. Skill (conta de desenvolvedor Amazon, a mesma da sua Alexa)
-
-1. Entre em <https://developer.amazon.com/alexa/console/ask> com o login da Amazon que usa na Alexa (criar a conta de desenvolvedor é gratuito).
-2. **Create Skill** → nome *Mercado Inteligente* → idioma **Português (Brasil)** → tipo **Custom** → hospedagem **Alexa-hosted (Node.js)**.
-3. Em **Build → JSON Editor**, cole o conteúdo de `skill/skill-package/interactionModels/custom/pt-BR.json` e **Save/Build**. (A invocação é *mercado inteligente*.)
-4. Em **Code**, substitua `index.js` e `package.json` pelos de `skill/lambda/`, crie `falas.js` e `api.js` com o conteúdo dos arquivos de mesmo nome, e adicione as variáveis de ambiente **LISTA_URL** (endereço do Worker) e **SKILL_SECRET** (o mesmo segredo do passo 1). **Deploy**.
-5. Em **Test**, ative o teste em *Development*. Pronto: ela já funciona nos aparelhos Alexa ligados à mesma conta Amazon (não precisa publicar na loja).
-
-### 4. Ligar a Alexa ao site
-
-No site, **Minha lista → Conectar a Alexa → Gerar código**. Fale: *"Alexa, abra mercado inteligente"* e depois *"vincular código"* e os 6 números.
-
-## Frases
+## Frases (versão simples)
 
 | Diga | Faz |
 |---|---|
 | "adicionar leite", "adicione 2 leite", "coloque pão na lista", "anote café", "preciso de ovos" | adiciona (soma se já existe) |
-| "remover leite", "tire pão da lista" | remove |
 | "o que tem na minha lista" | lê a lista |
-| "limpar a lista" | pede confirmação ("sim"/"não") e apaga tudo |
-| "vincular código 123456" | liga esta Alexa ao site |
+| "vincular código 123456" | liga esta Alexa ao site (uma vez) |
+
+Remover item e limpar a lista ainda **não** estão na skill (o Worker já tem as rotas, é só ligar depois).
 
 ## Testar sem Alexa nem Cloudflare
 

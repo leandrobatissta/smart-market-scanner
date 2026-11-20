@@ -1,7 +1,7 @@
 // Tudo o que a skill responde, sem depender do SDK da Alexa: recebe `api` (cliente do Worker) e devolve { fala, reprompt?, encerrar?, atributos? }.
 // Fica separado do index.js para dar para testar sem a Alexa.
 
-const AJUDA = 'Você pode dizer: adicionar leite, adicionar duas caixas de leite, remover leite, o que tem na minha lista, ou limpar a lista. Para ligar ao site, diga: vincular código, e os seis números que aparecem no site.';
+const AJUDA = 'Você pode dizer: adicionar leite, ou: o que tem na minha lista. Para ligar ao site, diga: vincular código, e os seis números que aparecem no site.';
 export const NAO_VINCULADO = 'Primeiro vincule esta Alexa ao site. No site, abra Minha lista, toque em Conectar Alexa e anote o código de seis números. Depois diga: vincular código, e os seis números.';
 
 const plural = (n, um, varios) => (n === 1 ? um : varios);
@@ -38,27 +38,9 @@ export async function adicionar({ api, userId, item, quantidade }) {
   } catch (e) { return falhou(e); }
 }
 
-export async function remover({ api, userId, item }) {
-  const nome = limpo(item);
-  if (!nome) return { fala: 'Não entendi qual item remover.', reprompt: 'Qual item você quer remover?' };
-  try {
-    const r = await api.remove(userId, nome);
-    return { fala: r.found ? `Pronto, tirei ${r.name} da lista.` : `Não achei ${nome} na sua lista.` };
-  } catch (e) { return falhou(e); }
-}
-
 export async function ler({ api, userId }) {
   try { const r = await api.list(userId); return { fala: r.speech || 'Sua lista está vazia.' }; } catch (e) { return falhou(e); }
 }
-
-/** Limpar pede confirmação (a lista toda some); a resposta sim/não vem no próximo turno. */
-export function pedirConfirmacaoLimpar() { return { fala: 'Tem certeza que quer limpar a lista inteira? Diga sim ou não.', reprompt: 'Quer limpar a lista inteira? Diga sim ou não.', atributos: { pendente: 'limpar' } }; }
-
-export async function responderSim({ api, userId, pendente }) {
-  if (pendente !== 'limpar') return { fala: 'Certo. ' + AJUDA };
-  try { await api.clear(userId); return { fala: 'Pronto, a lista está vazia.' }; } catch (e) { return falhou(e); }
-}
-export const responderNao = () => ({ fala: 'Tudo bem, não mexi na lista.' });
 
 export async function vincular({ api, userId, codigo }) {
   const c = codigoFalado(codigo);

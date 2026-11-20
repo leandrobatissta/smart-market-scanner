@@ -16,14 +16,6 @@
           "samples": []
         },
         {
-          "name": "AMAZON.YesIntent",
-          "samples": []
-        },
-        {
-          "name": "AMAZON.NoIntent",
-          "samples": []
-        },
-        {
           "name": "AMAZON.FallbackIntent",
           "samples": []
         },
@@ -57,25 +49,6 @@
           ]
         },
         {
-          "name": "RemoveItemIntent",
-          "slots": [
-            {
-              "name": "item",
-              "type": "Mercadoria"
-            }
-          ],
-          "samples": [
-            "remover {item}",
-            "remova {item}",
-            "tirar {item} da lista",
-            "tire {item} da lista",
-            "apagar {item}",
-            "apague {item}",
-            "excluir {item}",
-            "exclua {item}"
-          ]
-        },
-        {
           "name": "ReadListIntent",
           "samples": [
             "o que tem na minha lista",
@@ -86,17 +59,6 @@
             "leia a lista",
             "o que falta comprar",
             "qual é a minha lista"
-          ]
-        },
-        {
-          "name": "ClearListIntent",
-          "samples": [
-            "limpar a lista",
-            "limpe a lista",
-            "apagar a lista",
-            "apague a lista",
-            "esvaziar a lista",
-            "esvazie a lista"
           ]
         },
         {

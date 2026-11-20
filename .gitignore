@@ -9,3 +9,5 @@ alexa/worker/node_modules/
 alexa/worker/.wrangler/
 .dev.vars
 .env
+alexa/worker/.segredo-da-skill
+alexa/skill/lambda/config.js

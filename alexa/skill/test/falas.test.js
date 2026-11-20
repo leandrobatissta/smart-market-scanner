@@ -23,25 +23,10 @@ test('sem vínculo (409) pede para vincular; limite (429) e falha de rede viram 
   assert.match((await F.ler({ api: falso({ list: async () => { throw new Error('rede'); } }), userId: U })).fala, /Não consegui falar/);
 });
 
-test('remover, ler e iniciar', async () => {
-  assert.equal((await F.remover({ api: falso(), userId: U, item: 'leite' })).fala, 'Pronto, tirei leite da lista.');
-  assert.equal((await F.remover({ api: falso({ remove: async () => ({ found: false }) }), userId: U, item: 'sabão' })).fala, 'Não achei sabão na sua lista.');
+test('ler e iniciar', async () => {
   assert.equal((await F.ler({ api: falso({ list: async () => ({ speech: 'Sua lista tem 1 item: leite.' }) }), userId: U })).fala, 'Sua lista tem 1 item: leite.');
   assert.match((await F.iniciar({ api: falso({ list: async () => ({ items: [{}, {}] }) }), userId: U })).fala, /^Sua lista tem 2 itens\./);
   assert.match((await F.iniciar({ api: falso(), userId: U })).fala, /^Sua lista está vazia\./);
-});
-
-test('limpar pede confirmação; só "sim" com a pendência apaga', async () => {
-  let apagou = 0;
-  const api = falso({ clear: async () => { apagou++; } });
-  const pedido = F.pedirConfirmacaoLimpar();
-  assert.equal(pedido.atributos.pendente, 'limpar');
-  assert.equal(apagou, 0);
-  await F.responderSim({ api, userId: U, pendente: undefined });
-  assert.equal(apagou, 0);                               // "sim" solto não apaga nada
-  assert.match((await F.responderSim({ api, userId: U, pendente: 'limpar' })).fala, /lista está vazia/);
-  assert.equal(apagou, 1);
-  assert.match(F.responderNao().fala, /não mexi/);
 });
 
 test('vincular: aceita 6 dígitos (com espaço), recusa o resto, trata código inválido', async () => {
